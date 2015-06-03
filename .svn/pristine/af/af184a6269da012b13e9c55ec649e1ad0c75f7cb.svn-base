@@ -1,0 +1,272 @@
+/*
+ * TCSS 305 May 28, 2013 
+ */
+package view;
+
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+
+import javax.swing.BorderFactory;
+import javax.swing.JPanel;
+import javax.swing.Timer;
+import javax.swing.border.Border;
+
+import model.Block;
+import model.Board;
+
+/**
+ * The Board Panel draws the board that the game is played on.
+ * The board shows all the blocks as the fall and the frozen blocks.
+ * It also deletes rows when they are made.
+ *
+ * @author Casey Morrison
+ * @version May 28, 2013
+ */
+@SuppressWarnings("serial")
+public class BoardPanel extends JPanel {
+  
+  /** The default height of the panel. */
+  private static final int DEFAULT_HEIGHT = 600;
+  
+  /** The default width of the panel. */
+  private static final int DEFAULT_WIDTH = 300;
+  
+  /** The height that it prints the first blocks. */
+  private static final int PRINTING_HEIGHT = 540;
+  
+  /** The integer four for calculations. */
+  private static final int FOUR = 4;
+  
+  /** The font of the panel to display the game over. */
+  private static final Font FONT = new Font("Serif", Font.BOLD, 18);
+  
+  /** Used for positioning the end game words. */
+  private static final int OVER_SPACE = 90;
+  
+  /** The color of the falling blocks. */
+  private static final Color PURPLE = new Color(160, 32, 240);
+  
+  /** The color of the frozen blocks. */
+  private static final Color GOLD = new Color(255, 215, 0);
+  
+  /** Creates the space between the two panels drawn on top of each other. */
+  private static final int SPACING_BLOCKS = 3;
+  
+//  /** The font size for the game over. */
+//  private static final int FONT_SIZE = 22;
+  
+  /** The default size of the blocks. */
+  private static final int BLOCK_SIZE = 29;
+  
+  /** The default size of the inner blocks. */
+  private static final int INNER = 25;
+  
+  /** The x and y currently to draw. */
+  private static final int ROW = 30;
+  
+  /** The default size for this JPanel. */
+  private static final Dimension DEFUALT_SIZE = new Dimension(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+  
+//  /** The default size for the game over JPanel. */
+//  private static final Dimension GAME_OVER_SIZE = new Dimension(200, 200);
+  
+  /** The default thickness of the lines. */
+  private static final int THICKNESS = 1;
+  
+  /** The default border, a black line. */
+  private static final Border BLACK_LINE = BorderFactory.createLineBorder(Color.BLACK, 3);
+  
+  /** The delay of the timer that is associated with moving the blocks. */
+  private static final int THE_DELAY = 500;
+  
+  /** The board that shows movement of pieces. */
+  private final Board my_board;
+
+  /** The value that states whether the game is paused or not. */
+  private boolean my_pause;
+  
+  /** The timer that controls the movement of the ball. */
+  private final Timer my_move_timer;
+  
+  /**
+   * Constructs a new board panel.
+   * @param the_board - the board used for movement of blocks.
+   */
+  public BoardPanel(final Board the_board) {
+    super();
+    my_board = the_board;
+    my_move_timer = new Timer(THE_DELAY, new BBMoveListener());
+    my_move_timer.setInitialDelay(THE_DELAY);
+    
+    final KeyboardListener listener = new KeyboardListener();
+    addKeyListener(listener);
+    setPreferredSize(DEFUALT_SIZE);
+    setBackground(Color.WHITE);
+    setBorder(BLACK_LINE);
+    startTimer();
+  }
+  
+  /**
+   * Starts the timer and sets focus to the panel.
+   */
+  private void startTimer() {
+    setFocusable(true);
+    my_move_timer.start();
+  }
+  
+  /** {@inheritDoc} */
+  @Override
+  public void paintComponent(final Graphics the_graphics) {
+    super.paintComponent(the_graphics);
+    final Graphics2D g2d = (Graphics2D) the_graphics;
+    
+    g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+    g2d.setPaint(Color.LIGHT_GRAY);
+    g2d.setStroke(new BasicStroke(THICKNESS));
+
+    for (int i = 0; i < DEFAULT_WIDTH; i += ROW) {
+      g2d.drawLine(i, 0, i, DEFAULT_HEIGHT);
+    }
+    for (int j = 0; j < DEFAULT_HEIGHT; j += ROW) {
+      g2d.drawLine(0, j, DEFAULT_WIDTH, j);
+    }
+    
+    g2d.setPaint(Color.BLACK);
+    g2d.setStroke(new BasicStroke(2));
+  
+    
+    if (!my_board.gameIsOver()) {
+      for (int i = my_board.getHeight() + FOUR - 1; i > my_board.getHeight() - 1; i--) {
+        getRowPrint(i, g2d);
+//        System.out.println(my_board);
+      }
+    } 
+    for (int i = my_board.getHeight() - 1; i >= 0; i--) {
+      getRowPrint(i, g2d);
+    }
+
+    if (my_board.gameIsOver()) {
+      setFont(FONT);
+      my_move_timer.stop();
+      
+      g2d.setPaint(Color.LIGHT_GRAY);
+      g2d.fillRect(0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+      g2d.setPaint(Color.RED);
+      g2d.drawString("Game Over...", OVER_SPACE, DEFAULT_WIDTH);
+      
+//      final JLabel label = new JLabel("GAME       OVER");
+//      label.setPreferredSize(GAME_OVER_SIZE);
+//      label.setFont(new Font("Arial", Font.ITALIC, FONT_SIZE));
+//      label.setForeground(Color.BLACK);
+//      add(label);
+    }
+  }
+  
+  /**
+   * Displays the rows of frozen blocks.
+   * @param the_row - the current row of blocks.
+   * @param the_g2d - the graphics associated with displaying the blocks.
+   */
+  private void getRowPrint(final int the_row, final Graphics2D the_g2d) {
+    if (my_board.getFrozenBlocks().size() - 1 < the_row) {
+      for (int col = 0; col < my_board.getWidth(); col++) {
+        if (my_board.currentPieceAt(col, the_row)) {
+          the_g2d.setPaint(Color.BLACK);
+          the_g2d.fillRect(col * ROW + 1, PRINTING_HEIGHT - ((the_row - 1) * ROW) + 1,
+                           BLOCK_SIZE, BLOCK_SIZE);
+          the_g2d.setPaint(PURPLE);
+          the_g2d.fillRect(col * ROW + SPACING_BLOCKS, PRINTING_HEIGHT - ((the_row - 1) * ROW)
+                           + SPACING_BLOCKS,
+                           INNER, INNER);
+        }
+      }
+    } else {
+      final Block[] row_blocks = my_board.getFrozenBlocks().get(the_row);
+      
+      for (int i = 0; i < my_board.getWidth(); i++) {
+        if (my_board.currentPieceAt(i, the_row)) {
+          the_g2d.setPaint(Color.BLACK);
+          the_g2d.fillRect(i * ROW + 1, PRINTING_HEIGHT - ((the_row - 1) * ROW) + 1,
+                           BLOCK_SIZE, BLOCK_SIZE);
+          the_g2d.setPaint(PURPLE);
+          the_g2d.fillRect(i * ROW + SPACING_BLOCKS, PRINTING_HEIGHT - ((the_row - 1) * ROW)
+                           + SPACING_BLOCKS,
+                           INNER, INNER);
+        }  else if (row_blocks[i] != Block.EMPTY) {
+          the_g2d.setPaint(Color.BLACK);
+          the_g2d.fillRect(i * ROW + 1, PRINTING_HEIGHT - ((the_row - 1) * ROW) + 1,
+                           BLOCK_SIZE, BLOCK_SIZE);
+          the_g2d.setPaint(GOLD);
+          the_g2d.fillRect(i * ROW + SPACING_BLOCKS, PRINTING_HEIGHT - ((the_row - 1) * ROW)
+                           + SPACING_BLOCKS,
+                           INNER, INNER);
+        }
+      }
+    }
+  }
+  
+  /**
+   * Pause or resume the game.
+   */
+  public void pause() {
+    if (my_pause) {
+      my_move_timer.start();
+      my_pause = false;
+    } else {
+      my_move_timer.stop();
+      my_pause = true;
+    }
+  }
+  
+  /**
+   * A class that listens for timer events and moves the blocks on the board, checking for the
+   * window boundaries and changing direction as appropriate.
+   */
+  private class BBMoveListener implements ActionListener {
+    /**
+     * Moves the blocks.
+     * @param the_event The event triggering the action.
+     */
+    public void actionPerformed(final ActionEvent the_event) {
+      my_board.step();
+    }
+  }
+  
+  /**
+   * This class creates the keyboard listener so you can play the game.
+   *
+   * @author Casey Morrison
+   * @version Jun 1, 2013
+   */
+  public class KeyboardListener extends KeyAdapter {
+    /**
+     * Detects a key pressed event.
+     * @param the_event The event.
+     */
+    @Override
+    public void keyPressed(final KeyEvent the_event) {
+      if (the_event.getKeyCode() == KeyEvent.VK_A) {
+        my_board.moveLeft();
+      } else if (the_event.getKeyCode() == KeyEvent.VK_D) {
+        my_board.moveRight();
+      } else if (the_event.getKeyCode() == KeyEvent.VK_S) {
+        my_board.moveDown();
+      } else if (the_event.getKeyCode() == KeyEvent.VK_P) {
+        pause();
+      } else if (the_event.getKeyCode() == KeyEvent.VK_W) {
+        my_board.rotate();
+      } else if (the_event.getKeyCode() == KeyEvent.VK_SPACE) {
+        my_board.hardDrop();
+      }
+    }
+  }
+}

@@ -1,0 +1,496 @@
+/*
+ * TCSS 305 May 28, 2013 
+ */
+package view;
+
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
+import javax.swing.BorderFactory;
+import javax.swing.JPanel;
+import javax.swing.Timer;
+import javax.swing.border.Border;
+
+import model.Block;
+import model.Board;
+
+/**
+ * The Board Panel draws the board that the game is played on.
+ * The board shows all the blocks as the fall and the frozen blocks.
+ * It also deletes rows when they are made.
+ *
+ * @author Casey Morrison
+ * @version May 28, 2013
+ */
+@SuppressWarnings("serial")
+public class BoardPanel extends JPanel {
+  
+  /** The default height of the panel. */
+  private static final int DEFAULT_HEIGHT = 600;
+  
+  /** The default width of the panel. */
+  private static final int DEFAULT_WIDTH = 300;
+  
+  /** The height that it prints the first blocks. */
+  private static final int PRINTING_HEIGHT = 540;
+  
+  /** The integer 4 for calculations. */
+  private static final int FOUR = 4;
+  
+  /** The integer 5 for location calculations. */
+  private static final int FIVE = 5;
+  
+  /** The integer 35 for location calculations. */
+  private static final int THIRTY_FIVE = 35;
+  
+  /** The integer 22 for location calculations. */
+  private static final int TWENTY_TWO = 22;
+  
+  /** The integer one 100 for location calculations. */
+  private static final int HUNDRED = 100;
+  
+  /** The integer 245 for location calculations. */
+  private static final int TWO_FOUR_FIVE = 245;
+  
+  /** The integer 15 for location calculations. */
+  private static final int FIFTEEN = 15;
+  
+  /** The default font for the labels. */
+  private static final String ARIAL = "Arial";
+  
+  /** The font of the panel to display the game over. */
+  private static final Font FONT = new Font(ARIAL, Font.BOLD, 28);
+  
+  /** The default of the panel to display the game over. */
+  private static final Font DEFAULT_FONT = new Font(ARIAL, Font.PLAIN, 12);
+  
+  /** Used for positioning the end game words. */
+  private static final int OVER_SPACE = 70;
+  
+  /** Used for setting the delay time. */
+  private static final int DELAY_MULTIPLIER = 75;
+  
+  /** The color of the falling blocks. */
+  private static final Color PURPLE = new Color(160, 32, 240);
+  
+  /** The thickness of the game over lines. */
+  private static final BasicStroke OVER_THICKNESS = new BasicStroke(10);
+  
+  /** The color of the frozen blocks. */
+  private static final Color GOLD = new Color(255, 215, 0);
+  
+  /** Creates the space between the two panels drawn on top of each other. */
+  private static final int SPACING_BLOCKS = 3;
+  
+  /** The default size of the blocks. */
+  private static final int BLOCK_SIZE = 29;
+  
+  /** The default size of the inner blocks. */
+  private static final int INNER = 25;
+  
+  /** The x and y currently to draw. */
+  private static final int ROW = 30;
+  
+  /** The default size for this JPanel. */
+  private static final Dimension DEFUALT_SIZE = new Dimension(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+  
+  /** The default thickness of the lines. */
+  private static final int THICKNESS = 1;
+  
+//  /** The color of the border. */
+//  private static final Color DARKER_GRAY = new Color(32, 32, 32);
+  
+  /** The default border, a black line. */
+  private static final Border BLACK_LINE = BorderFactory.createLineBorder(Color.BLACK, 3);
+  
+  /** The delay of the timer that is associated with moving the blocks. */
+  private static final int THE_DELAY = 800;
+  
+  /** The board that shows movement of pieces. */
+  private final Board my_board;
+
+  /** The value that states whether the game is paused or not. */
+  private boolean my_pause;
+  
+  /** The timer that controls the movement of the ball. */
+  private final Timer my_move_timer;
+  
+  /** States whether the game has started yet or not. */
+  private boolean my_started;
+
+  /** The state of whether the grid is visible or not, false is not visible. */
+  private boolean my_grid_value;
+  
+  /** The state of whether the game is ended or not. */
+  private boolean my_end;
+  
+//  /** The state of whether game is upside down or not, false is right side up. */
+//  private boolean my_upside_down;
+  
+  /**
+   * Constructs a new board panel.
+   * @param the_board - the board used for movement of blocks.
+   */
+  public BoardPanel(final Board the_board) {
+    super();
+    my_board = the_board;
+    my_move_timer = new Timer(THE_DELAY, new BBMoveListener());
+    
+    final KeyboardListener listener = new KeyboardListener();
+    addKeyListener(listener);
+    setPreferredSize(DEFUALT_SIZE);
+    setBorder(BLACK_LINE);
+    setFocusable(true);
+  }
+  
+  /**
+   * Starts the timer and sets focus to the panel.
+   */
+  private void startTimer() {
+    my_move_timer.setInitialDelay(0);
+    my_move_timer.start();
+  }
+  
+  /** {@inheritDoc}
+   * This paint component draws the grid.
+   * It also draws all the falling blocks as well.
+   */
+  @Override
+  public void paintComponent(final Graphics the_graphics) {
+    super.paintComponent(the_graphics);
+    final Graphics2D g2d = (Graphics2D) the_graphics;
+    
+    g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+    g2d.setPaint(Color.LIGHT_GRAY);
+    g2d.setStroke(new BasicStroke(THICKNESS));
+    
+    if (my_started) {
+      drawBackground(g2d);
+      
+      if (my_grid_value) {
+        drawGrid(g2d);
+      } 
+      g2d.setPaint(Color.BLACK);
+      g2d.setStroke(new BasicStroke(2));
+     
+      if (!my_board.gameIsOver()) {
+        for (int i = my_board.getHeight() + FOUR - 1; i > my_board.getHeight() - 1; i--) {
+          getRowPrint(i, g2d);
+        }
+      } 
+      for (int i = my_board.getHeight() - 1; i >= 0; i--) {
+        getRowPrint(i, g2d);
+      }
+  
+      if (my_board.gameIsOver()) {
+        setFont(FONT);
+        my_move_timer.stop();
+        setGameOverScreen(g2d);
+      } 
+    } else {
+      g2d.setPaint(Color.DARK_GRAY);
+      
+      final File file = new File("tet1.jpg");
+      BufferedImage img;
+      try {
+        img = ImageIO.read(file);
+        g2d.drawImage(img, null, 0, 0);
+      } catch (final IOException e) {
+        g2d.fillRect(0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+      }
+      
+      g2d.setPaint(Color.WHITE);
+      g2d.drawString("Press Enter to Start the Game!", OVER_SPACE, DEFAULT_WIDTH);
+    }
+    setSpeed();
+  }
+  
+  /**
+   * Draws the grid under the blocks.
+   * @param the_g2d - the graphic used for drawing.
+   */
+  private void drawGrid(final Graphics2D the_g2d) {
+    for (int i = 0; i < DEFAULT_WIDTH; i += ROW) {
+      the_g2d.drawLine(i, 0, i, DEFAULT_HEIGHT);
+    }
+    for (int j = 0; j < DEFAULT_HEIGHT; j += ROW) {
+      the_g2d.drawLine(0, j, DEFAULT_WIDTH, j);
+    }
+  }
+  
+  /**
+   * Sets if the grid is visible.
+   * The grid has squares that are 30x30 pixels.
+   * @param the_grid_value - the boolean value which turns the grid on or off.
+   */
+  public void setGrid(final boolean the_grid_value) {
+    my_grid_value = the_grid_value;
+  }
+  
+  /**
+   * Draws the background of the playing panel.
+   * @param the_g2d - graphic used for drawing.
+   */
+  private void drawBackground(final Graphics2D the_g2d) {
+//    final File file = new File("red_diag.jpg");
+//    final File file = new File("background1.jpg");
+//    final File file = new File("red_diag_edited.jpg");
+//    final File file = new File("red_diag_edited1.jpg");
+//    final File file = new File("red_diag_edited2.jpg");
+//    final File file = new File("red_diag_edited3.jpg");
+    final File file = new File("red_diag_edited4.jpg");
+//    final File file = new File("red_diag_edited5.jpg");
+    BufferedImage img;
+    try {
+      img = ImageIO.read(file);
+      the_g2d.drawImage(img, null, 0, 0);
+    } catch (final IOException e) {
+      setBackground(Color.WHITE);
+    }
+    setBackground(Color.WHITE);
+  }
+  
+//  /**
+//   * Sets if the game play is upside down or not.
+//   * @param the_value - the boolean value which turns the grid on or off.
+//   */
+//  public void setUpsideDown(final boolean the_value) {
+//    my_upside_down = the_value;
+//  }
+  
+  /**
+   * Resets the game when a new game is chosen in the menu.
+   */
+  public void reset() {
+    my_move_timer.restart();
+    my_move_timer.stop();
+    my_started = false;
+    my_pause = false;
+    setFont(DEFAULT_FONT);
+  }
+  
+  /**
+   * Sets the speed of the blocks falling depending on the level of the game.
+   */
+  private void setSpeed() {
+    final int level = my_board.getLevel();
+    if (level > 1 && (level * DELAY_MULTIPLIER) < THE_DELAY) {
+      final int delay = THE_DELAY - (level * DELAY_MULTIPLIER);
+      my_move_timer.setDelay(delay);
+    }
+  }
+  
+  /**
+   * Draws the game over screen.
+   * @param the_g2d - the graphic used for drawing.
+   */
+  private void setGameOverScreen(final Graphics2D the_g2d) {
+    the_g2d.setStroke(OVER_THICKNESS);
+    the_g2d.setPaint(Color.BLACK);
+    
+//    final File file = new File("test.jpg");
+    final File file = new File("gameover.jpg");
+    BufferedImage img;
+    try {
+      img = ImageIO.read(file);
+      the_g2d.drawImage(img, null, 0, 0);
+    } catch (final IOException e) {
+      for (int i = 0; i < DEFAULT_WIDTH; i += ROW) {
+        for (int j = 0; j < DEFAULT_HEIGHT; j += ROW) {
+          the_g2d.setPaint(GOLD);
+          the_g2d.fillRect(j * 2 + FIVE, i * 2 + FIVE, TWENTY_TWO, TWENTY_TWO);
+          the_g2d.fillRect(i * 2 + THIRTY_FIVE, j * 2 + THIRTY_FIVE, TWENTY_TWO, TWENTY_TWO);
+          the_g2d.setPaint(Color.BLACK);
+        }
+        the_g2d.drawLine(i, 0, i, DEFAULT_HEIGHT);
+      }
+      for (int j = 0; j < DEFAULT_HEIGHT; j += ROW) {
+        for (int i = FIFTEEN; i < DEFAULT_WIDTH; i += ROW) {
+          the_g2d.setPaint(PURPLE);
+          the_g2d.fillRect(i * 2 + FIVE, j * 2 + FIVE, TWENTY_TWO, TWENTY_TWO);
+          the_g2d.fillRect(i * 2 + THIRTY_FIVE, j * 2 + THIRTY_FIVE, TWENTY_TWO, TWENTY_TWO);
+        }     
+        the_g2d.setPaint(PURPLE);
+        the_g2d.fillRect(FIVE, j * 2 + THIRTY_FIVE, TWENTY_TWO, TWENTY_TWO);
+        the_g2d.setPaint(Color.BLACK);
+        the_g2d.drawLine(0, j, DEFAULT_WIDTH, j);
+      }
+      the_g2d.fillRect(0, TWO_FOUR_FIVE, DEFAULT_WIDTH, HUNDRED);
+      the_g2d.setPaint(Color.WHITE);
+      the_g2d.drawString("Game Over...", OVER_SPACE, DEFAULT_WIDTH);
+    }
+    
+//    for (int i = 0; i < DEFAULT_WIDTH; i += ROW) {
+//      for (int j = 0; j < DEFAULT_HEIGHT; j += ROW) {
+//        the_g2d.setPaint(GOLD);
+//        the_g2d.fillRect(j * 2 + FIVE, i * 2 + FIVE, TWENTY_TWO, TWENTY_TWO);
+//        the_g2d.fillRect(i * 2 + THIRTY_FIVE, j * 2 + THIRTY_FIVE, TWENTY_TWO, TWENTY_TWO);
+//        the_g2d.setPaint(Color.BLACK);
+//      }
+//      the_g2d.drawLine(i, 0, i, DEFAULT_HEIGHT);
+//    }
+//    for (int j = 0; j < DEFAULT_HEIGHT; j += ROW) {
+//      for (int i = FIFTEEN; i < DEFAULT_WIDTH; i += ROW) {
+//        the_g2d.setPaint(PURPLE);
+//        the_g2d.fillRect(i * 2 + FIVE, j * 2 + FIVE, TWENTY_TWO, TWENTY_TWO);
+//        the_g2d.fillRect(i * 2 + THIRTY_FIVE, j * 2 + THIRTY_FIVE, TWENTY_TWO, TWENTY_TWO);
+//      }     
+//      the_g2d.setPaint(PURPLE);
+//      the_g2d.fillRect(FIVE, j * 2 + THIRTY_FIVE, TWENTY_TWO, TWENTY_TWO);
+//      the_g2d.setPaint(Color.BLACK);
+//      the_g2d.drawLine(0, j, DEFAULT_WIDTH, j);
+//    }
+//    the_g2d.fillRect(0, TWO_FOUR_FIVE, DEFAULT_WIDTH, HUNDRED);
+//    the_g2d.setPaint(Color.WHITE);
+//    the_g2d.drawString("Game Over...", OVER_SPACE, DEFAULT_WIDTH);
+  }
+  
+  /**
+   * Displays the rows of frozen blocks.
+   * @param the_row - the current row of blocks.
+   * @param the_g2d - the graphics associated with displaying the blocks.
+   */
+  private void getRowPrint(final int the_row, final Graphics2D the_g2d) {
+    if (my_board.getFrozenBlocks().size() - 1 < the_row) {
+      for (int col = 0; col < my_board.getWidth(); col++) {
+        if (my_board.currentPieceAt(col, the_row)) {
+          the_g2d.setPaint(Color.BLACK);
+          the_g2d.fillRect(col * ROW + 1, PRINTING_HEIGHT - ((the_row - 1) * ROW) + 1,
+                           BLOCK_SIZE, BLOCK_SIZE);
+          the_g2d.setPaint(PURPLE);
+          the_g2d.fillRect(col * ROW + SPACING_BLOCKS, PRINTING_HEIGHT - ((the_row - 1) * ROW)
+                           + SPACING_BLOCKS,
+                           INNER, INNER);
+        }
+      }
+    } else {
+      final Block[] row_blocks = my_board.getFrozenBlocks().get(the_row);
+      
+      for (int i = 0; i < my_board.getWidth(); i++) {
+        if (my_board.currentPieceAt(i, the_row)) {
+          the_g2d.setPaint(Color.BLACK);
+          the_g2d.fillRect(i * ROW + 1, PRINTING_HEIGHT - ((the_row - 1) * ROW) + 1,
+                           BLOCK_SIZE, BLOCK_SIZE);
+          the_g2d.setPaint(PURPLE);
+          the_g2d.fillRect(i * ROW + SPACING_BLOCKS, PRINTING_HEIGHT - ((the_row - 1) * ROW)
+                           + SPACING_BLOCKS,
+                           INNER, INNER);
+        }  else if (row_blocks[i] != Block.EMPTY) {
+          the_g2d.setPaint(Color.BLACK);
+          the_g2d.fillRect(i * ROW + 1, PRINTING_HEIGHT - ((the_row - 1) * ROW) + 1,
+                           BLOCK_SIZE, BLOCK_SIZE);
+          the_g2d.setPaint(GOLD);
+          the_g2d.fillRect(i * ROW + SPACING_BLOCKS, PRINTING_HEIGHT - ((the_row - 1) * ROW)
+                           + SPACING_BLOCKS,
+                           INNER, INNER);
+        }
+      }
+    }
+  }
+  
+  /**
+   * End the game.
+   */
+  public void endGame() {
+    my_end = true;
+    my_move_timer.stop();
+  }
+  
+  /**
+   * Pause or resume the game.
+   */
+  public void pause() {
+    if (my_pause) {
+      my_move_timer.start();
+      my_pause = false;
+    } else {
+      my_move_timer.stop();
+      my_pause = true;
+    }
+  }
+  
+  /**
+   * Returns if the board has started or not for the start screen display.
+   * @return my_started - true if started.
+   */
+  public boolean isStartState() {
+    return my_started;
+  }
+  
+  /**
+   * A class that listens for timer events and moves the blocks on the board, checking for the
+   * window boundaries and changing direction as appropriate.
+   */
+  private class BBMoveListener implements ActionListener {
+    /**
+     * Moves the blocks.
+     * @param the_event The event triggering the action.
+     */
+    public void actionPerformed(final ActionEvent the_event) {
+      my_board.step();
+    }
+  }
+  
+  /**
+   * This class creates the keyboard listener so you can play the game.
+   *
+   * @author Casey Morrison
+   * @version Jun 1, 2013
+   */
+  public class KeyboardListener extends KeyAdapter {
+    /**
+     * Detects a key pressed event.
+     * @param the_event The event.
+     */
+    @Override
+    public void keyPressed(final KeyEvent the_event) {
+      if (!my_end) {
+        if (!my_pause && my_started) {
+          keys(the_event);
+        }
+        if (my_started) {
+          if (the_event.getKeyCode() == KeyEvent.VK_P) {
+            pause();
+          }
+        } else {
+          if (the_event.getKeyCode() == KeyEvent.VK_ENTER) {
+            my_started = true;
+            startTimer();
+          }
+        }
+      }
+    }
+    
+    /**
+     * Sets the key listener to these keys if the game isn't starting or paused.
+     * Handles a movement when the keys are pressed.
+     * @param the_event - the event when a key is pressed.
+     */
+    private void keys(final KeyEvent the_event) {
+      if (the_event.getKeyCode() == KeyEvent.VK_A) {
+        my_board.moveLeft();
+      } else if (the_event.getKeyCode() == KeyEvent.VK_D) {
+        my_board.moveRight();
+      } else if (the_event.getKeyCode() == KeyEvent.VK_S) {
+        my_board.moveDown();
+      } else if (the_event.getKeyCode() == KeyEvent.VK_W) {
+        my_board.rotate();
+      } else if (the_event.getKeyCode() == KeyEvent.VK_SPACE) {
+        my_board.hardDrop();
+      }
+    }
+  }
+}

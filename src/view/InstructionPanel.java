@@ -1,0 +1,141 @@
+/*
+ * TCSS 305 Jun 4, 2013 
+ */
+package view;
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.border.Border;
+import javax.swing.border.TitledBorder;
+
+/**
+ *
+ *
+ * @author Casey Morrison
+ * @version Jun 4, 2013
+ */
+@SuppressWarnings("serial")
+public class InstructionPanel extends JPanel {
+  
+  /** The default size for this JPanel. */
+  private static final Dimension INSTRUCTION_SIZE = new Dimension(150, 175);
+  
+  /** The default font size for the instruction labels. */
+  private static final int INSTRUCTION_FONT_SIZE = 12;
+  
+  /** The default black line border. */
+  private static final Border BLACK_LINE = BorderFactory.createLineBorder(Color.BLACK, 3);
+  
+  /** The default font for the labels. */
+  private static final String ARIAL = "Arial";
+  
+  /** The color of the background. */
+  private static final Color DARKER_RED = new Color(205, 0, 0);
+  
+  /** The default box height. */
+  private static final int BOX_HEIGHT = 10;
+  
+  /** The default box width. */
+  private static final int BOX_WIDTH = 5;
+  
+  /** The x value for drawing the background. */
+  private static final int THE_X = -5;
+  
+  /** The y value for drawing the background. */
+  private static final int THE_Y = -5;
+  
+  /**
+   * Sets up the panel that displays the instructions.
+   */
+  public InstructionPanel() {
+    super();
+    setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
+    setPreferredSize(INSTRUCTION_SIZE);
+    setBackground(DARKER_RED);
+    setBorder(BLACK_LINE);
+    
+    setTheBorder();
+    
+    createInstructionLabels();
+  }
+  
+  /**
+   * Sets the border of the panel.
+   */
+  private void setTheBorder() {
+    TitledBorder titleborder;
+    titleborder = BorderFactory.createTitledBorder(BLACK_LINE, "Instructions: ");
+    titleborder.setTitlePosition(TitledBorder.TOP);
+    titleborder.setTitleJustification(TitledBorder.CENTER);
+    setBorder(titleborder);
+  }
+  
+  /**
+   * Creates the labels that display the controls.
+   */
+  private void createInstructionLabels() {
+    final JLabel label1 = new JLabel("Move Left: A");
+    final JLabel label2 = new JLabel("Move Right: D");
+    final JLabel label3 = new JLabel("Move Down: S");
+    final JLabel label4 = new JLabel("Rotate: W");
+    final JLabel label5 = new JLabel("Drop: Space Bar");
+    final JLabel label6 = new JLabel("Pause: P");
+    label1.setFont(new Font(ARIAL, Font.BOLD, INSTRUCTION_FONT_SIZE));
+    label1.setForeground(Color.WHITE);
+    label2.setFont(new Font(ARIAL, Font.BOLD, INSTRUCTION_FONT_SIZE));
+    label2.setForeground(Color.WHITE);
+    label3.setFont(new Font(ARIAL, Font.BOLD, INSTRUCTION_FONT_SIZE));
+    label3.setForeground(Color.WHITE);
+    label4.setFont(new Font(ARIAL, Font.BOLD, INSTRUCTION_FONT_SIZE));
+    label4.setForeground(Color.WHITE);
+    label5.setFont(new Font(ARIAL, Font.BOLD, INSTRUCTION_FONT_SIZE));
+    label5.setForeground(Color.WHITE);
+    label6.setFont(new Font(ARIAL, Font.BOLD, INSTRUCTION_FONT_SIZE));
+    label6.setForeground(Color.WHITE);
+    add(label1);
+    add(Box.createRigidArea(new Dimension(BOX_WIDTH, BOX_HEIGHT)));
+    add(label2);
+    add(Box.createRigidArea(new Dimension(BOX_WIDTH, BOX_HEIGHT)));
+    add(label3);
+    add(Box.createRigidArea(new Dimension(BOX_WIDTH, BOX_HEIGHT)));
+    add(label4);
+    add(Box.createRigidArea(new Dimension(BOX_WIDTH, BOX_HEIGHT)));
+    add(label5);
+    add(Box.createRigidArea(new Dimension(BOX_WIDTH, BOX_HEIGHT)));
+    add(label6);
+  }
+  
+  /** {@inheritDoc} 
+   * Draws the background of the instruction panel.
+   */
+  @Override
+  public void paintComponent(final Graphics the_graphics) {
+    super.paintComponent(the_graphics);
+    final Graphics2D g2d = (Graphics2D) the_graphics;
+    g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+    
+    final File file = new File("red_diag.jpg");
+//    final File file = new File("background1.jpg");
+    BufferedImage img;
+    try {
+      img = ImageIO.read(file);
+      g2d.drawImage(img, null, THE_X, THE_Y);
+    } catch (final IOException e) {
+      setBackground(DARKER_RED);
+    }
+  }
+}

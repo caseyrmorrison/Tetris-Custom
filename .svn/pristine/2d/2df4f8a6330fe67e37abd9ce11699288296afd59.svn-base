@@ -1,0 +1,214 @@
+/*
+ * TCSS 305 May 28, 2013 
+ */
+package view;
+
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.Shape;
+import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.BorderFactory;
+import javax.swing.JPanel;
+import javax.swing.border.Border;
+import javax.swing.border.EtchedBorder;
+import javax.swing.border.TitledBorder;
+
+import model.AbstractPiece;
+import model.Block;
+import model.Board;
+import model.MutablePiece;
+
+/**
+ *
+ *
+ * @author Casey Morrison
+ * @version May 28, 2013
+ */
+@SuppressWarnings("serial")
+public class BoardPanel extends JPanel {
+  
+  /** The background color of the panel. */
+  public static final Color BACKGROUND_COLOR = Color.WHITE;
+  
+  /** The default size for this JPanel. */
+  private static final Dimension DEFUALT_SIZE = new Dimension(300, 600);
+  
+  private static final Border BLACK_LINE = BorderFactory.createLineBorder(Color.BLACK, 3);
+  
+  private Board my_board;
+
+  private static final int my_thickness = 1;
+  
+  /**
+   * Constructs a new board panel.
+   */
+  public BoardPanel(final Board the_board) {
+    super();
+    my_board = the_board;
+    setPreferredSize(DEFUALT_SIZE);
+    setBackground(Color.WHITE);
+    setBorder(BLACK_LINE);
+    
+    setupBoard();
+  }
+  
+  private void setupBoard() {
+    
+    
+  }
+  
+  /** {@inheritDoc} */
+  @Override
+  public void paintComponent(final Graphics the_graphics) {
+    super.paintComponent(the_graphics);
+    final Graphics2D g2d = (Graphics2D) the_graphics;
+    
+    g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+    g2d.setPaint(Color.LIGHT_GRAY);
+    g2d.setStroke(new BasicStroke(my_thickness));
+
+    for (int i = 0; i < 300; i += 30) {
+      g2d.drawLine(i, 0, i, 600);
+    }
+    for (int j = 0; j < 600; j += 30) {
+      g2d.drawLine(0, j, 300, j);
+    }
+    
+    g2d.setPaint(Color.BLACK);
+    g2d.setStroke(new BasicStroke(2));
+    final Shape rect1 = new Rectangle2D.Double(90, 570, 30, 30);
+    final Shape rect2 = new Rectangle2D.Double(120, 570, 30, 30);
+    final Shape rect3 = new Rectangle2D.Double(120, 540, 30, 30);
+    final Shape rect4 = new Rectangle2D.Double(150, 540, 30, 30);
+    g2d.draw(rect1);
+    g2d.draw(rect2);
+    g2d.draw(rect3);
+    g2d.draw(rect4);
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+//    if(!my_board.gameIsOver()) {
+//      my_board.step();
+//      
+//      
+//      AbstractPiece piece = (AbstractPiece) my_board.getCurrentPiece();
+//      final int[][] result = piece.getBoardCoordinates();
+//      int x = result[0][0];
+//      System.out.println(result);
+////      g2d.drawRect(, ,200, -200);
+//
+//      
+//      
+//      
+//      int pieceX = piece.getX() * 30;
+//      int pieceY = piece.getY() * 30;
+////      System.out.println(pieceX + " " + pieceY);
+//
+//
+//      
+//    }
+
+    
+//    if(!my_board.gameIsOver()) {
+//      my_board.step();
+//      System.out.println(my_board);
+//    }
+  }
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  /**
+   * Returns a string that represents the current state of the board.
+   * 
+   * @return The string representation of the board
+   */
+  @Override
+  public String toString() {
+    final StringBuilder sb = new StringBuilder();
+
+    for (int i = my_height + EXTRA_ROWS - 1; i > my_height - 1; i--) {
+      sb.append(EMPTY);
+      sb.append(getRowString(i));
+      sb.append('\n');
+    }
+
+    for (int i = my_height - 1; i >= 0; i--) {
+      sb.append(WALL);
+      sb.append(getRowString(i));
+      sb.append(WALL);
+      sb.append('\n');
+    }
+    sb.append(CORNER);
+    for (int i = 0; i < my_width; i++) {
+      sb.append(FLOOR);
+    }
+    sb.append(CORNER);
+    return sb.toString();
+  }
+
+  /**
+   * Returns a string representing the blocks in the given row.
+   * 
+   * @param the_row The row to represent
+   * @return The string representation
+   */
+  private String getRowString(final int the_row) {
+    final StringBuilder sb = new StringBuilder();
+
+    if (my_blocks.size() - 1 < the_row) {
+      for (int col = 0; col < my_width; col++) {
+        if (currentPieceAt(col, the_row)) {
+          sb.append(CURRENT_PIECE); 
+        }  else {
+          sb.append(EMPTY);
+        }
+      }
+    } else {
+      final Block[] row_blocks = my_blocks.get(the_row);
+
+      for (int i = 0; i < my_width; i++) {
+        if (currentPieceAt(i, the_row)) {
+          sb.append(CURRENT_PIECE);
+        } else if (row_blocks[i] == Block.EMPTY) {
+          sb.append(EMPTY);
+        } else {
+          sb.append(FROZEN);
+        }
+      }
+    }
+    return sb.toString();
+  }
+  
+  
+  
+  
+  
+  
+  
+
+}

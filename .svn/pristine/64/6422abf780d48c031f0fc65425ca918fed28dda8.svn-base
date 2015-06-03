@@ -1,0 +1,209 @@
+/*
+ * TCSS 305 May 28, 2013 
+ */
+package view;
+
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.Shape;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.BorderFactory;
+import javax.swing.JPanel;
+import javax.swing.Timer;
+import javax.swing.border.Border;
+import javax.swing.border.EtchedBorder;
+import javax.swing.border.TitledBorder;
+
+import model.AbstractPiece;
+import model.Block;
+import model.Board;
+import model.MutablePiece;
+
+/**
+ *
+ *
+ * @author Casey Morrison
+ * @version May 28, 2013
+ */
+@SuppressWarnings("serial")
+public class BoardPanel extends JPanel {
+  
+  /** The background color of the panel. */
+  public static final Color BACKGROUND_COLOR = Color.WHITE;
+  
+  /** The default size for this JPanel. */
+  private static final Dimension DEFUALT_SIZE = new Dimension(300, 600);
+  
+  private static final Border BLACK_LINE = BorderFactory.createLineBorder(Color.BLACK, 3);
+  
+  private Board my_board;
+
+  private static final int my_thickness = 1;
+  
+  private boolean my_pause = false;
+  
+  /** The timer that controls the movement of the ball. */
+  private final Timer my_move_timer;
+  
+  /**
+   * Constructs a new board panel.
+   */
+  public BoardPanel(final Board the_board) {
+    super();
+    my_board = the_board;
+    my_move_timer = new Timer(100, new BBMoveListener());
+    my_move_timer.setInitialDelay(100);
+    
+    final KeyboardListener listener = new KeyboardListener();
+
+    addKeyListener(listener);
+
+    
+    setFocusable(true);
+    setPreferredSize(DEFUALT_SIZE);
+    setBackground(Color.WHITE);
+    setBorder(BLACK_LINE);
+    my_move_timer.start();
+  }
+  
+  /**
+   * A class that listens for timer events and moves the ball, checking for the
+   * window boundaries and changing direction as appropriate.
+   */
+  private class BBMoveListener implements ActionListener {
+    /**
+     * Moves the ball appropriately.
+     * 
+     * @param the_event The event triggering the action.
+     */
+    public void actionPerformed(final ActionEvent the_event) {
+
+      my_board.step();
+    }
+  }
+  
+  /** {@inheritDoc} */
+  @Override
+  public void paintComponent(final Graphics the_graphics) {
+    super.paintComponent(the_graphics);
+    final Graphics2D g2d = (Graphics2D) the_graphics;
+    
+    
+    g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+    g2d.setPaint(Color.LIGHT_GRAY);
+    g2d.setStroke(new BasicStroke(my_thickness));
+
+    for (int i = 0; i < 300; i += 30) {
+      g2d.drawLine(i, 0, i, 600);
+    }
+    for (int j = 0; j < 600; j += 30) {
+      g2d.drawLine(0, j, 300, j);
+    }
+    
+    g2d.setPaint(Color.BLACK);
+    g2d.setStroke(new BasicStroke(2));
+  
+    
+    if(!my_board.gameIsOver()) {
+      for (int i = my_board.getHeight() + 4 - 1; i > my_board.getHeight() - 1; i--) {
+        getRowPrint(i, g2d);
+      }
+    }
+    for (int i = my_board.getHeight() - 1; i >= 0; i--) {
+      getRowPrint(i, g2d);
+    }
+    
+//    if(!my_board.gameIsOver()) {
+//      for (int i = my_board.getHeight() - 1; i > my_board.getHeight() + 4 - 1 ; i++) {
+//        getRowPrint(i, g2d);
+//      }
+//    }
+//    for (int i = 0; i <= my_board.getHeight() - 1; i++) {
+//      getRowPrint(i, g2d);
+//    }
+
+    
+    if(!my_board.gameIsOver()) {
+      System.out.println(my_board);
+    }
+  }
+
+  private void getRowPrint(final int the_row, Graphics2D the_g2d) {
+
+    if (my_board.getFrozenBlocks().size() - 1 < the_row) {
+      for (int col = 0; col < my_board.getWidth(); col++) {
+        if (my_board.currentPieceAt(col, the_row)) {
+          the_g2d.setPaint(Color.BLACK);
+          the_g2d.fillRect(col*30, the_row*30, 30, 30);
+          the_g2d.setPaint(Color.RED);
+          the_g2d.fillRect(col*30 + 3, the_row*30 + 3, 25, 25);
+        }
+      }
+    } else {
+      final Block[] row_blocks = my_board.getFrozenBlocks().get(the_row);
+      
+      for (int i = 0; i < my_board.getWidth(); i++) {
+//        if (my_board.currentPieceAt(i, the_row)) {
+//          the_g2d.setPaint(Color.BLACK);
+//          the_g2d.fillRect(i*30, the_row*30, 30, 30);
+//          the_g2d.setPaint(Color.RED);
+//          the_g2d.fillRect(i*30 + 3, the_row*30 + 3, 25, 25);
+//        } 
+//        else
+          if (row_blocks[i] != Block.EMPTY) {
+          the_g2d.setPaint(Color.BLACK);
+          the_g2d.fillRect(i*30, the_row*30, 30, 30);
+          the_g2d.setPaint(Color.RED);
+          the_g2d.fillRect(i*30 + 3, the_row*30 + 3, 25, 25);
+        }
+      }
+    }
+  }
+  
+  public void pause() {
+    if (!my_pause) {
+      my_move_timer.stop();
+      my_pause = true;
+    } else {
+      my_move_timer.start();
+      my_pause = false;
+    }
+  }
+  
+  public class KeyboardListener extends KeyAdapter {
+    /**
+     * Detects a key pressed event.
+     * 
+     * @param the_event The event.
+     */
+    @Override
+    public void keyPressed(final KeyEvent the_event) {
+      if (the_event.getKeyCode() == KeyEvent.VK_A) {
+        my_board.moveLeft();
+      } else if (the_event.getKeyCode() == KeyEvent.VK_D) {
+        my_board.moveRight();
+      } else if (the_event.getKeyCode() == KeyEvent.VK_S) {
+        my_board.moveDown();
+      } else if (the_event.getKeyCode() == KeyEvent.VK_P) {
+        pause();
+      } else if (the_event.getKeyCode() == KeyEvent.VK_W) {
+        my_board.rotate();
+      }
+    }
+   
+  }
+  
+  
+}

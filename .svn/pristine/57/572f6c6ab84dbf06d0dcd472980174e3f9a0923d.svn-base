@@ -1,0 +1,222 @@
+/*
+ * TCSS 305 May 28, 2013 
+ */
+package view;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.border.Border;
+import javax.swing.border.TitledBorder;
+
+import model.Board;
+
+/**
+ * The side panel holds panels that show the:
+ * Next piece to be played with, the Score and Level, and the Instructions of how to play.
+ *
+ * @author Casey Morrison
+ * @version May 28, 2013
+ */
+@SuppressWarnings("serial")
+public class SidePanel extends JPanel {
+
+  /** The background color of the panel. */
+  public static final Color BACKGROUND_COLOR = Color.RED;
+  
+  /** The color to paint with. */
+  public static final Color FOREGROUND_COLOR = Color.BLACK;
+  
+  /** The default size for this JPanel. */
+  private static final Dimension DEFUALT_SIZE = new Dimension(200, 600);
+  
+  /** The default size for this JPanel. */
+  private static final Dimension SCORE_SIZE = new Dimension(150, 250);
+  
+  /** The default size for this JPanel. */
+  private static final Dimension INSTRUCTION_SIZE = new Dimension(150, 175);
+  
+  /** The default font size for the instruction labels. */
+  private static final int INSTRUCTION_FONT_SIZE = 12;
+  
+  /** The default font size for the score labels. */
+  private static final int SCORE_FONT_SIZE = 18;
+  
+  /** The default box height. */
+  private static final int BOX_HEIGHT = 10;
+  
+  /** The default box width. */
+  private static final int BOX_WIDTH = 5;
+  
+  /** The default score box height. */
+  private static final int SCORE_BOX_HEIGHT = 50;
+  
+  /** The default score second box height. */
+  private static final int SCORE2_BOX_HEIGHT = 90;
+  
+  /** The default font for the labels. */
+  private static final String ARIAL = "Arial";
+  
+  /** The default black line border. */
+  private static final Border BLACK_LINE = BorderFactory.createLineBorder(Color.BLACK, 3);
+  
+  /** The default red line border. */
+  private static final Border RED_LINE = BorderFactory.createLineBorder(Color.RED, 3);
+  
+  /** The default title border used for the title frames. */
+  private static TitledBorder my_title_border;
+  
+  /** The JPanel holding all the other JPanels. */
+  private final JPanel my_holder = new JPanel();
+  
+  /** The JPanel that holds the score. */
+  private JPanel my_scoreblock;
+  
+  /** The JPanel that holds the instructions. */
+  private JPanel my_instructionblock;
+  
+  /** The Board that gets movement of blocks. */
+  private final Board my_board;
+  
+  /** The JPanel object that displays the next piece. */
+  private NextPiecePanel my_nextpiece;
+
+  
+  /**
+   * Constructs a new board panel.
+   * @param the_board - the board used to move the shapes.
+   */
+  public SidePanel(final Board the_board) {
+    super();
+    my_board = the_board;
+    setupPanel();
+  }
+
+  /**
+   * Sets up the side panel.
+   */
+  private void setupPanel() {
+    setPreferredSize(DEFUALT_SIZE);
+    my_holder.setBackground(BACKGROUND_COLOR);
+    setLayout(new BorderLayout());
+    setBorder(BLACK_LINE);
+    add(my_holder, BorderLayout.CENTER);
+    final JPanel westbuffer = new JPanel();
+    final JPanel eastbuffer = new JPanel();
+    westbuffer.setBackground(BACKGROUND_COLOR);
+    eastbuffer.setBackground(BACKGROUND_COLOR);
+    add(westbuffer, BorderLayout.EAST);
+    add(eastbuffer, BorderLayout.WEST);
+    
+    setupNextBlock();
+    setupScoreBox();
+    setupInstructionsBox();
+  }
+  
+  /**
+   * Sets up the panel that displays the next block.
+   */
+  private void setupNextBlock() {
+    my_nextpiece = new NextPiecePanel(my_board);
+    my_holder.add(my_nextpiece, BorderLayout.NORTH);
+  }
+  
+  /**
+   * Sets up the panel that displays the score.
+   */
+  private void setupScoreBox() {
+    my_scoreblock = new JPanel();
+    my_scoreblock.setLayout(new BoxLayout(my_scoreblock, BoxLayout.PAGE_AXIS));
+    my_scoreblock.setPreferredSize(SCORE_SIZE);
+    my_scoreblock.setBorder(RED_LINE);
+    my_scoreblock.setBackground(Color.red);
+    createScoreLabels();
+    my_holder.add(my_scoreblock, BorderLayout.CENTER);
+  }
+  
+  /**
+   * Creates the labels that show the score and level.
+   */
+  private void createScoreLabels() {
+    final JLabel label = new JLabel("Score: 0");
+    final JLabel label2 = new JLabel("Level: 1");
+    label.setFont(new Font(ARIAL, Font.BOLD, SCORE_FONT_SIZE));
+    label.setForeground(Color.WHITE);
+    label2.setFont(new Font(ARIAL, Font.BOLD, SCORE_FONT_SIZE));
+    label2.setForeground(Color.WHITE);
+    my_scoreblock.add(Box.createRigidArea(new Dimension(BOX_WIDTH, SCORE_BOX_HEIGHT)));
+    my_scoreblock.add(label);
+    my_scoreblock.add(Box.createRigidArea(new Dimension(BOX_WIDTH, SCORE2_BOX_HEIGHT)));
+    my_scoreblock.add(label2);
+  }
+  
+  /**
+   * Sets up the panel that displays the instructions.
+   */
+  private void setupInstructionsBox() {
+    my_instructionblock = new JPanel();
+    my_instructionblock.setLayout(new BoxLayout(my_instructionblock, BoxLayout.PAGE_AXIS));
+    my_instructionblock.setPreferredSize(INSTRUCTION_SIZE);
+    my_instructionblock.setBackground(Color.RED);
+    my_instructionblock.setBorder(BLACK_LINE);
+    
+    my_title_border = BorderFactory.createTitledBorder(BLACK_LINE, "Instructions: ");
+    my_title_border.setTitlePosition(TitledBorder.TOP);
+    my_title_border.setTitleJustification(TitledBorder.CENTER);
+    my_instructionblock.setBorder(my_title_border);
+    
+    createInstructionLabels();
+    
+    my_holder.add(my_instructionblock, BorderLayout.SOUTH);
+  }
+  
+  /**
+   * Creates the labels that display the controls.
+   */
+  private void createInstructionLabels() {
+    final JLabel label1 = new JLabel("Move Left: A");
+    final JLabel label2 = new JLabel("Move Right: D");
+    final JLabel label3 = new JLabel("Move Down: S");
+    final JLabel label4 = new JLabel("Rotate: W");
+    final JLabel label5 = new JLabel("Drop: Space Bar");
+    final JLabel label6 = new JLabel("Pause: P");
+    label1.setFont(new Font(ARIAL, Font.BOLD, INSTRUCTION_FONT_SIZE));
+    label1.setForeground(Color.WHITE);
+    label2.setFont(new Font(ARIAL, Font.BOLD, INSTRUCTION_FONT_SIZE));
+    label2.setForeground(Color.WHITE);
+    label3.setFont(new Font(ARIAL, Font.BOLD, INSTRUCTION_FONT_SIZE));
+    label3.setForeground(Color.WHITE);
+    label4.setFont(new Font(ARIAL, Font.BOLD, INSTRUCTION_FONT_SIZE));
+    label4.setForeground(Color.WHITE);
+    label5.setFont(new Font(ARIAL, Font.BOLD, INSTRUCTION_FONT_SIZE));
+    label5.setForeground(Color.WHITE);
+    label6.setFont(new Font(ARIAL, Font.BOLD, INSTRUCTION_FONT_SIZE));
+    label6.setForeground(Color.WHITE);
+    my_instructionblock.add(label1);
+    my_instructionblock.add(Box.createRigidArea(new Dimension(BOX_WIDTH, BOX_HEIGHT)));
+    my_instructionblock.add(label2);
+    my_instructionblock.add(Box.createRigidArea(new Dimension(BOX_WIDTH, BOX_HEIGHT)));
+    my_instructionblock.add(label3);
+    my_instructionblock.add(Box.createRigidArea(new Dimension(BOX_WIDTH, BOX_HEIGHT)));
+    my_instructionblock.add(label4);
+    my_instructionblock.add(Box.createRigidArea(new Dimension(BOX_WIDTH, BOX_HEIGHT)));
+    my_instructionblock.add(label5);
+    my_instructionblock.add(Box.createRigidArea(new Dimension(BOX_WIDTH, BOX_HEIGHT)));
+    my_instructionblock.add(label6);
+  }
+  
+  /** {@inheritDoc} */
+  @Override
+  public void paintComponent(final Graphics the_graphics) {
+    super.paintComponent(the_graphics);
+    my_nextpiece.repaint();
+  }
+}

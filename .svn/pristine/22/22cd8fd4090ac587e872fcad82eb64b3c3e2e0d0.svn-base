@@ -1,0 +1,103 @@
+/*
+ * TCSS 305 May 29, 2013 
+ */
+package view;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+
+/**
+ * The MenuBar is an object that creates a menu bar at the top of the frame.
+ * The MenuBar consists of a file menu and a help menu.
+ *
+ * @author Casey Morrison
+ * @version May 29, 2013
+ */
+@SuppressWarnings("serial")
+public class MenuBar extends JMenuBar {
+  
+  /** The file drop down menu. */
+  private final JMenu my_filemenu = new JMenu("File");;
+  /** The help drop down menu. */
+  private final JMenu my_helpmenu = new JMenu("Help");
+  /** The quit button. */
+  private final JMenuItem my_quit_button = new JMenuItem("Quit", 'q');
+  /** The new game button. */
+  private final JMenuItem my_new_game_button = new JMenuItem("New Game", 'N');
+  /** The pause button. */
+  private final JMenuItem my_pause_button = new JMenuItem("Pause", 'p');
+  /** The instructions button. */
+  private final JMenuItem my_instructions = new JMenuItem("Instructions", 'I');
+
+  /**
+   * Sets up the Menu bar.
+   * @param the_frame - the frame this bar is attached to.
+   */
+  public MenuBar(final JFrame the_frame) {
+    super();
+    my_quit_button.addActionListener(new ActionListener() {
+      public void actionPerformed(final ActionEvent the_event) {
+        the_frame.dispose();
+      }
+    });
+    setupFileMenu();
+    setupHelpMenu();
+    
+    add(my_filemenu);
+    add(my_helpmenu);
+  }
+
+  /** 
+   * Sets up the file menu.
+   */
+  private void setupFileMenu() {
+    my_filemenu.setMnemonic(KeyEvent.VK_F);
+    my_filemenu.add(my_new_game_button);
+    my_filemenu.add(my_pause_button);
+    my_filemenu.addSeparator();
+    my_filemenu.add(my_quit_button);
+  }
+  
+  /** 
+   * Sets up the help menu.
+   */
+  private void setupHelpMenu() {
+    my_helpmenu.setMnemonic(KeyEvent.VK_H);
+
+    final JMenuItem about = new JMenuItem("About...", 'A');
+    about.addActionListener(new ActionListener() { 
+      public void actionPerformed(final ActionEvent the_event) {
+        JOptionPane.showMessageDialog(null, "Implemented by:\n\n Casey Morrison, 5/29/2013.", 
+                                      "About", JOptionPane.INFORMATION_MESSAGE);
+      }
+    });
+    setupInstructions();
+    my_helpmenu.add(my_instructions);
+    my_helpmenu.addSeparator();
+    my_helpmenu.add(about);
+  }
+  
+  /**
+   * Sets up the instructions in the help menu.
+   */
+  private void setupInstructions() {
+    my_instructions.addActionListener(new ActionListener() { 
+      public void actionPerformed(final ActionEvent the_event) {
+        final String str = new String("Move Left: A\nMove Right: D\nMove Down: S\n"
+            + "Rotate: W\nDrop: Space Bar\nPause: P");
+        JOptionPane.showMessageDialog(null, str, "Instructions",
+                                      JOptionPane.INFORMATION_MESSAGE);
+      }
+    });
+    //
+    //  HAS TO PAUSE THE GAME **********************
+    //
+  }
+}

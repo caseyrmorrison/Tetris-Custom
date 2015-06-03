@@ -1,0 +1,155 @@
+/*
+ * TCSS 305 June 3, 2013 
+ */
+package view;
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.border.Border;
+
+import model.Board;
+
+/**
+ * Creates a score panel that displays the score and the level of the game.
+ * 
+ * The score is updated as well as the level when blocks are cleared.
+ *
+ * @author Casey Morrison
+ * @version June 3, 2013
+ */
+@SuppressWarnings("serial")
+public class ScoreBlockPanel extends JPanel {
+
+  /** The default size for this JPanel. */
+  private static final Dimension SCORE_SIZE = new Dimension(150, 250);
+  
+  /** The color of the background. */
+  private static final Color DARKER_RED = new Color(205, 0, 0);
+  
+  /** The default red line border. */
+  private static final Border RED_LINE = BorderFactory.createLineBorder(DARKER_RED, 3);
+  
+  /** The integer used for creating the placement of the score on the board. */
+  private static final int DIMENSION_OF_SCORE_X = 69;
+  
+  /** The integer used for creating the placement of the score on the board. */
+  private static final int DIMENSION_OF_SCORE_Y = 67;
+  
+  /** The integer used for the x value of the dimension of the level on the board. */
+  private static final int DIMENSION_OF_LEVEL_X = 62;
+  
+  /** The integer used for the y value of the dimension of the level on the board. */
+  private static final int DIMENSION_OF_LEVEL_Y = 180;
+  
+  /** The default font for the labels. */
+  private static final String ARIAL = "Arial";
+  
+  /** The default font size for the score labels. */
+  private static final int SCORE_FONT_SIZE = 18;
+  
+  /** The default box width. */
+  private static final int BOX_WIDTH = 5;
+  
+  /** The default score box height. */
+  private static final int SCORE_BOX_HEIGHT = 50;
+  
+  /** The default score second box height. */
+  private static final int SCORE2_BOX_HEIGHT = 90;
+  
+  /** The font of the panel to display the game over. */
+  private static final Font FONT = new Font(ARIAL, Font.PLAIN, 18);
+  
+  /** The x value for drawing the background. */
+  private static final int THE_X = -3;
+  
+  /** The y value for drawing the background. */
+  private static final int THE_Y = -2;
+  
+  /** The spacer used to add a space between the score and level and the values. */
+  private static final String SPACER = " ";
+  
+  /** The Board that updates the score. */
+  private final Board my_board;
+
+  /**
+   * Creates a score board that displays the score and the level of the game.
+   * @param the_board - the board used for getting the score of the game.
+   */
+  public ScoreBlockPanel(final Board the_board) {
+    super();
+    my_board = the_board;
+    setupScoreBox();
+  }
+  
+  /**
+   * Sets up the panel that displays the score.
+   */
+  private void setupScoreBox() {
+    setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
+    setPreferredSize(SCORE_SIZE);
+    setBackground(DARKER_RED);
+    createScoreLabels();
+  }
+  
+  /**
+   * Creates the labels that show the score and level.
+   */
+  private void createScoreLabels() {
+    final JLabel label = new JLabel("Score:");
+    final JLabel label2 = new JLabel("Level:");
+    label.setFont(new Font(ARIAL, Font.BOLD, SCORE_FONT_SIZE));
+    label.setForeground(Color.WHITE);
+    label2.setFont(new Font(ARIAL, Font.BOLD, SCORE_FONT_SIZE));
+    label2.setForeground(Color.WHITE);
+    add(Box.createRigidArea(new Dimension(BOX_WIDTH, SCORE_BOX_HEIGHT)));
+    add(label);
+    add(Box.createRigidArea(new Dimension(BOX_WIDTH, SCORE2_BOX_HEIGHT)));
+    add(label2);
+    setFont(FONT);
+  }
+  
+  /** {@inheritDoc} 
+   * Draws the Score and the Level of the game currently.
+   */
+  @Override
+  public void paintComponent(final Graphics the_graphics) {
+    super.paintComponent(the_graphics);
+    final Graphics2D g2d = (Graphics2D) the_graphics;
+    g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+    
+    final File file = new File("red_diag.jpg");
+//    final File file = new File("background1.jpg");
+    BufferedImage img;
+    try {
+      img = ImageIO.read(file);
+      g2d.drawImage(img, null, THE_X, THE_Y);
+    } catch (final IOException e) {
+      setBackground(DARKER_RED);
+      setBorder(RED_LINE);
+    }
+    
+    final int score = my_board.getScore();
+    final int level = my_board.getLevel();
+    
+    final String scores = SPACER + score;
+    final String levels = SPACER + level;
+    
+    g2d.setPaint(Color.WHITE);
+    g2d.drawString(scores, DIMENSION_OF_SCORE_X, DIMENSION_OF_SCORE_Y);
+    g2d.drawString(levels, DIMENSION_OF_LEVEL_X, DIMENSION_OF_LEVEL_Y);
+  }
+}

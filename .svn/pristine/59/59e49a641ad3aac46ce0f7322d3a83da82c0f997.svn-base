@@ -1,0 +1,188 @@
+/*
+ * TCSS 305 May 28, 2013 
+ */
+package view;
+
+import java.awt.BasicStroke;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.Shape;
+import java.awt.geom.Rectangle2D;
+
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.border.Border;
+import javax.swing.border.TitledBorder;
+
+import model.Block;
+import model.Board;
+
+/**
+ *
+ *
+ * @author Casey Morrison
+ * @version May 28, 2013
+ */
+@SuppressWarnings("serial")
+public class SidePanel extends JPanel {
+
+  /** The background color of the panel. */
+  public static final Color BACKGROUND_COLOR = Color.RED;
+  
+  /** The color to paint with. */
+  public static final Color FOREGROUND_COLOR = Color.BLACK;
+  
+  /** The default size for this JPanel. */
+  private static final Dimension DEFUALT_SIZE = new Dimension(200, 600);
+  
+  /** The default size for this JPanel. */
+  private static final Dimension WINDOW_SIZE = new Dimension(150, 150);
+  
+  /** The default size for this JPanel. */
+  private static final Dimension SCORE_SIZE = new Dimension(150, 250);
+  
+  /** The default size for this JPanel. */
+  private static final Dimension INSTRUCTION_SIZE = new Dimension(150, 175);
+  
+  private static final int my_thickness = 1;
+  
+  private static final Border BLACK_LINE = BorderFactory.createLineBorder(Color.BLACK, 3);
+  
+  private static final Border RED_LINE = BorderFactory.createLineBorder(Color.RED, 3);
+  
+  private static TitledBorder my_title_border;
+  
+  private JPanel my_holder = new JPanel();
+  
+  private JPanel nextBlock;
+  
+  private JPanel scoreBlock;
+  
+  private JPanel instructionBlock;
+  
+  private Board my_board;
+  
+  private NextPiecePanel my_nextpiece;
+
+  
+  /**
+   * Constructs a new board panel.
+   */
+  public SidePanel(final Board the_board) {
+    super();
+    my_board = the_board;
+    setupPanel();
+  }
+
+  private void setupPanel() {
+    setPreferredSize(DEFUALT_SIZE);
+    my_holder.setBackground(BACKGROUND_COLOR);
+    setLayout(new BorderLayout());
+    setBorder(BLACK_LINE);
+    add(my_holder, BorderLayout.CENTER);
+    final JPanel westBuffer = new JPanel();
+    final JPanel eastBuffer = new JPanel();
+    westBuffer.setBackground(BACKGROUND_COLOR);
+    eastBuffer.setBackground(BACKGROUND_COLOR);
+    add(westBuffer, BorderLayout.EAST);
+    add(eastBuffer, BorderLayout.WEST);
+    
+    setupNextBlock();
+    setupScoreBox();
+    setupInstructionsBox();
+  }
+  
+  private void setupNextBlock() {
+    my_nextpiece = new NextPiecePanel(my_board);
+    my_holder.add(my_nextpiece, BorderLayout.NORTH);
+  }
+  
+
+  
+  private void setupScoreBox() {
+    scoreBlock = new JPanel();
+    scoreBlock.setLayout(new BoxLayout(scoreBlock, BoxLayout.PAGE_AXIS));
+    scoreBlock.setPreferredSize(SCORE_SIZE);
+    scoreBlock.setBorder(RED_LINE);
+    scoreBlock.setBackground(Color.red);
+    createScoreLabels();
+    my_holder.add(scoreBlock, BorderLayout.CENTER);
+  }
+  
+  private void createScoreLabels() {
+    final JLabel label = new JLabel("Score: 0");
+    final JLabel label2 = new JLabel("Level: 1");
+    label.setFont(new Font("Arial", Font.BOLD, 18));
+    label.setForeground(Color.WHITE);
+    label2.setFont(new Font("Arial", Font.BOLD, 18));
+    label2.setForeground(Color.WHITE);
+    scoreBlock.add(Box.createRigidArea(new Dimension(5,50)));
+    scoreBlock.add(label);
+    scoreBlock.add(Box.createRigidArea(new Dimension(5,90)));
+    scoreBlock.add(label2);
+  }
+  
+  private void setupInstructionsBox() {
+    instructionBlock = new JPanel();
+    instructionBlock.setLayout(new BoxLayout(instructionBlock, BoxLayout.PAGE_AXIS));
+    instructionBlock.setPreferredSize(INSTRUCTION_SIZE);
+    instructionBlock.setBackground(Color.RED);
+    instructionBlock.setBorder(BLACK_LINE);
+    
+    my_title_border = BorderFactory.createTitledBorder(BLACK_LINE, "Instructions: ");
+    my_title_border.setTitlePosition(TitledBorder.TOP);
+    my_title_border.setTitleJustification(TitledBorder.CENTER);
+    instructionBlock.setBorder(my_title_border);
+    
+    createInstructionLabels();
+    
+    my_holder.add(instructionBlock, BorderLayout.SOUTH);
+  }
+  
+  private void createInstructionLabels() {
+    final JLabel label1 = new JLabel("Move Left: A");
+    final JLabel label2 = new JLabel("Move Right: D");
+    final JLabel label3 = new JLabel("Move Down: S");
+    final JLabel label4 = new JLabel("Rotate: W");
+    final JLabel label5 = new JLabel("Drop: Space Bar");
+    final JLabel label6 = new JLabel("Pause: P");
+    label1.setFont(new Font("Arial", Font.BOLD, 12));
+    label1.setForeground(Color.WHITE);
+    label2.setFont(new Font("Arial", Font.BOLD, 12));
+    label2.setForeground(Color.WHITE);
+    label3.setFont(new Font("Arial", Font.BOLD, 12));
+    label3.setForeground(Color.WHITE);
+    label4.setFont(new Font("Arial", Font.BOLD, 12));
+    label4.setForeground(Color.WHITE);
+    label5.setFont(new Font("Arial", Font.BOLD, 12));
+    label5.setForeground(Color.WHITE);
+    label6.setFont(new Font("Arial", Font.BOLD, 12));
+    label6.setForeground(Color.WHITE);
+    instructionBlock.add(label1);
+    instructionBlock.add(Box.createRigidArea(new Dimension(5,10)));
+    instructionBlock.add(label2);
+    instructionBlock.add(Box.createRigidArea(new Dimension(5,10)));
+    instructionBlock.add(label3);
+    instructionBlock.add(Box.createRigidArea(new Dimension(5,10)));
+    instructionBlock.add(label4);
+    instructionBlock.add(Box.createRigidArea(new Dimension(5,10)));
+    instructionBlock.add(label5);
+    instructionBlock.add(Box.createRigidArea(new Dimension(5,10)));
+    instructionBlock.add(label6);
+  }
+  
+  /** {@inheritDoc} */
+  @Override
+  public void paintComponent(final Graphics the_graphics) {
+    super.paintComponent(the_graphics);
+    my_nextpiece.repaint();
+  }
+}
